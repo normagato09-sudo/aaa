@@ -120,35 +120,7 @@ function pick(e){
   $('ul').innerHTML=t.length?t.map(function(x){return '<li><b>'+x+'</b>Pendiente</li>'}).join(''):'<li>Sin tareas para este día.</li>';
   if(n===4)hack();
 }
-/* Audio de "hackeo" */
-var ac,tm;
-function glitchOn(){
-  try{ac=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return}
-  var o=ac.createOscillator(),gn=ac.createGain();o.type='sawtooth';gn.gain.value=.12;o.connect(gn);gn.connect(ac.destination);o.start();
-  var buf=ac.createBuffer(1,ac.sampleRate,ac.sampleRate),d=buf.getChannelData(0);for(var i=0;i<d.length;i++)d[i]=Math.random()*2-1;
-  tm=setInterval(function(){
-    o.frequency.value=[80,220,440,1200,60,900][Math.floor(Math.random()*6)];
-    gn.gain.value=Math.random()<.3?0:.12;
-    if(Math.random()<.35){var s=ac.createBufferSource(),g2=ac.createGain();g2.gain.value=.15;s.buffer=buf;s.connect(g2);g2.connect(ac.destination);s.start(0,0,.08)}
-  },90);
-  ac._o=o;
-}
-function glitchOff(){clearInterval(tm);try{ac._o.stop();ac.close()}catch(e){}}
-/* Secuencia */
-var ti=[],busy=false;
-function hack(){
-  if(busy)return;busy=true;
-  var h=$('hack'),lg=$('lg'),cd=$('cd');h.classList.add('on');lg.textContent='';glitchOn();
-  var msgs=["Acceso no autorizado detectado","Cifrando archivos de agenda...","Copiando contactos...","Desactivando antivirus...","Subiendo calendario a servidor desconocido...","Contraseña comprometida","No apagues el dispositivo","Sistema fuera de control"];
-  var s=20;cd.textContent='Reinicio en '+s+' s';
-  var iv=setInterval(function(){
-    s--;cd.textContent='Reinicio en '+s+' s';
-    var hex='';for(var i=0;i<6;i++)hex+=Math.random().toString(16).slice(2,12)+' ';
-    lg.textContent+=(s%2?hex:'> '+msgs[Math.floor(Math.random()*msgs.length)])+'\n';
-    if(s<=0){clearInterval(iv);glitchOff();h.classList.remove('on');reveal()}
-  },1000);
-  ti=[iv];
-}
+var busy=false;
 var SONG=null,RV=null;
 function reveal(){
   var sh=$('show');sh.classList.add('on');
@@ -158,7 +130,7 @@ function reveal(){
   steps.push({d:add('<h2>¡Era broma!</h2><p style="font-size:1.4rem;margin-top:22px;color:#f6e6c8">Tráeme mi ron o mi turrón</p>','big'),ms:6000});
   steps.push({d:add('<h2>Ya estás en la mitad de la vida</h2><p>Por eso te ponemos esta canción<br>y estas fotos de recuerdo</p>'),ms:7000,on:playSong});
   for(var k=0;k<photos.length;k+=5){var h='';photos.slice(k,k+5).forEach(function(p){h+='<img src="'+p+'" alt="">'});steps.push({d:add('<div class="pics'+(function(n){return n==1?' one':n==2?' two':''})(photos.slice(k,k+5).length)+'">'+h+'</div>'),ms:5000,on:playSong})}
-  steps.push({d:add('<h2>Felicidades, papa</h2>','big'),on:function(){playSong();confetti();var n=0;clearInterval(cf);cf=setInterval(function(){if(++n<4)confetti()},5000)}});
+  steps.push({d:add('<h2>Felicidades, papá</h2>','big'),on:function(){playSong();confetti();var n=0;clearInterval(cf);cf=setInterval(function(){if(++n<4)confetti()},5000)}});
   function show(k){
     clearTimeout(timer);clearInterval(cf);
     i=Math.max(0,Math.min(steps.length-1,k));
