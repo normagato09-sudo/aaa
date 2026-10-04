@@ -69,10 +69,12 @@ h1{font-size:1.2rem;margin:0}
 .sl h2{font:400 clamp(2rem,9vw,3.6rem)/1.05 'Alfa Slab One',serif;margin:18px 0 0;color:#f6e6c8;text-shadow:3px 3px 0 #9b2015}
 .sl p{margin:10px 0 0;color:#d9921f;font-size:1.1rem}
 .sl.big h2{font-size:clamp(2.6rem,13vw,5rem)}
-.pics{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center;max-width:94%}
-.pics img{width:30%;max-width:260px;height:26vh;object-fit:cover;object-position:50% 25%;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.6)}
-.pics.two img{width:46%;max-width:none;height:auto;max-height:70vh;object-fit:contain}
-.pics.one img{width:auto;max-width:92%;height:auto;max-height:78vh;object-fit:contain}
+.sl.ph{padding:0}
+.sl .bg{position:absolute;inset:-8%;background:#120a05 center/cover no-repeat;filter:blur(30px) brightness(.45)}
+.sl img.ph{position:relative;width:min(92vw,calc(80vh * var(--r,1)));width:min(92vw,calc(80dvh * var(--r,1)));height:auto;max-width:92vw;max-height:80vh;max-height:80dvh;transform:scale(.95)}
+.sl.on img.ph{animation:kb 5s linear forwards}
+@keyframes kb{to{transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.sl.on img.ph{animation:none;transform:none}}
 #x{position:absolute;top:14px;right:14px;z-index:3;background:rgba(0,0,0,.4);color:#fff;border:1px solid #fff5;border-radius:6px;padding:6px 10px;cursor:pointer}
 #c{position:fixed;inset:0;pointer-events:none;z-index:11}
 #sk,#nv{display:none}
@@ -102,10 +104,10 @@ h1{font-size:1.2rem;margin:0}
 <script>
 var $=function(i){return document.getElementById(i)};
 var TASKS={1:["Revisar facturas"],2:["Llamar al seguro"],5:["Reunión de equipo"],8:["Cita médica","Comprar café"],12:["Entrega de informe"],15:["Comida familiar"],19:["Renovar suscripción"],23:["Taller del coche"],28:["Cierre de mes"]};
-var photos=[];
+var photos=[],ratios=[];
 // Detecta solas las fotos assets/foto1.jpg, foto2.jpg, ... (en paralelo, hasta 60)
-(function(){var ok={},left=60;function done(){if(--left)return;for(var n=1;ok[n];n++)photos.push('assets/foto'+n+'.jpg')}
-for(var n=1;n<=60;n++)(function(n){var im=new Image();im.onload=function(){ok[n]=1;done()};im.onerror=done;im.src='assets/foto'+n+'.jpg'})(n)})();
+(function(){var ok={},left=60;function done(){if(--left)return;for(var n=1;ok[n];n++){photos.push('assets/foto'+n+'.jpg');ratios.push(ok[n])}}
+for(var n=1;n<=60;n++)(function(n){var im=new Image();im.onload=function(){ok[n]=im.naturalWidth/im.naturalHeight||1;done()};im.onerror=done;im.src='assets/foto'+n+'.jpg'})(n)})();
 var audioURL='assets/zombie.mp3';
 var days=["L","M","X","J","V","S","D"],g=$('g');
 days.forEach(function(d){g.insertAdjacentHTML('beforeend','<div class="dn">'+d+'</div>')});
@@ -129,7 +131,7 @@ function reveal(){
   function playSong(){if(!SONG&&audioURL)SONG=new Audio(audioURL);if(SONG&&SONG.paused){SONG.play().catch(function(){})}}
   steps.push({d:add('<h2>¡Era broma!</h2><p style="font-size:1.4rem;margin-top:22px;color:#f6e6c8">Tráeme mi ron o mi turrón</p>','big'),ms:6000});
   steps.push({d:add('<h2>Ya estás en la mitad de la vida</h2><p>Por eso te ponemos esta canción<br>y estas fotos de recuerdo</p>'),ms:7000,on:playSong});
-  for(var k=0;k<photos.length;k+=5){var h='';photos.slice(k,k+5).forEach(function(p){h+='<img src="'+p+'" alt="">'});steps.push({d:add('<div class="pics'+(function(n){return n==1?' one':n==2?' two':''})(photos.slice(k,k+5).length)+'">'+h+'</div>'),ms:5000,on:playSong})}
+  photos.forEach(function(p,k){steps.push({d:add('<div class="bg" style="background-image:url(\''+p+'\')"></div><img class="ph" style="--r:'+ratios[k]+'" src="'+p+'" alt="">','ph'),ms:3500,on:playSong})});
   steps.push({d:add('<h2>Felicidades, papá</h2>','big'),on:function(){playSong();confetti();var n=0;clearInterval(cf);cf=setInterval(function(){if(++n<4)confetti()},5000)}});
   function show(k){
     clearTimeout(timer);clearInterval(cf);
