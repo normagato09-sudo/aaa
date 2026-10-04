@@ -1,0 +1,5 @@
+1. Mete tus fotos dentro de la carpeta "assets" con estos nombres, en orden:
+   foto1.jpg, foto2.jpg, foto3.jpg ... (sin saltarte números).
+   Mejor en múltiplos de 5 (10, 15, 20...). Máximo 60.
+2. La canción ya está en assets/zombie.mp3.
+3. Sube la carpeta entera a Vercel (vercel.com/new o "vercel" desde la terminal).
