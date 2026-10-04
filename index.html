@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agenda personal</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=Alfa+Slab+One&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f6f8;--ink:#17212b;--mut:#6a7784;--ac:#0e7c86;--line:#dde3e8;--card:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.45 'IBM Plex Sans',system-ui,sans-serif}
+.app{max-width:960px;margin:0 auto;padding:20px;display:grid;gap:20px;grid-template-columns:1fr}
+@media(min-width:800px){.app{grid-template-columns:2fr 1fr}}
+header{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center}
+h1{font-size:1.2rem;margin:0}
+.cal,.side{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px}
+.cal h2{margin:0 0 12px;font-size:1.05rem}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.dn{font-size:.78rem;color:var(--mut);text-align:center}
+.d{aspect-ratio:1;border:1px solid var(--line);background:#fff;border-radius:8px;font:inherit;color:var(--ink);cursor:pointer;position:relative}
+.d:hover{border-color:var(--ac)}
+.d:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.d.ev:after{content:"";position:absolute;bottom:6px;left:50%;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:var(--ac)}
+.d.sel{background:var(--ac);color:#fff;border-color:var(--ac)}
+.side h3{margin:0 0 10px;font-size:1rem}
+.side ul{list-style:none;padding:0;margin:0}
+.side li{padding:9px 0;border-bottom:1px solid var(--line);color:var(--mut)}
+.side li b{color:var(--ink);display:block}
+.link{background:none;border:0;color:var(--mut);font:inherit;font-size:.85rem;text-decoration:underline;cursor:pointer;grid-column:1/-1;justify-self:center}
+.btn{font:600 .95rem inherit;font-family:inherit;border:0;border-radius:8px;padding:11px 16px;background:var(--ac);color:#fff;cursor:pointer}
+#setup{position:fixed;inset:0;background:rgba(10,20,30,.6);display:none;align-items:center;justify-content:center;padding:20px;z-index:5}
+#setup.on{display:flex}
+#setup div{background:#fff;border-radius:12px;padding:22px;max-width:420px;width:100%}
+#setup label{display:block;margin:12px 0 4px;font-weight:600}
+#setup input[type=text]{width:100%;padding:9px;border:1px solid var(--line);border-radius:6px;font:inherit}
+/* Hackeo */
+#hack{position:fixed;inset:0;background:#000;color:#2dff6e;font-family:ui-monospace,Menlo,monospace;display:none;z-index:9;padding:20px;overflow:hidden}
+#hack.on{display:block}
+#hack h2{color:#ff2b2b;font-size:clamp(1.4rem,6vw,2.4rem);margin:0 0 10px;animation:fl .25s infinite}
+#hack pre{margin:0;font-size:.85rem;line-height:1.3;white-space:pre-wrap;word-break:break-all;opacity:.9}
+#cd{position:absolute;right:20px;bottom:24px;color:#ff2b2b;font-size:1.1rem}
+#hack:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 2px,transparent 2px 4px);pointer-events:none}
+@keyframes fl{50%{opacity:.2;transform:translateX(4px)}}
+#hack{animation:shk .12s infinite}
+#hack.on:after{content:"";position:absolute;inset:0;background:radial-gradient(transparent 40%,rgba(255,0,0,.55));animation:pulse .6s infinite;pointer-events:none}
+#hack h2{text-shadow:3px 0 #0ff,-3px 0 #f0f}
+#pg{margin:12px 0;color:#ff2b2b;font-weight:700}
+#pg b{display:block;height:14px;border:1px solid #ff2b2b;margin-top:6px}
+#pg i{display:block;height:100%;width:0;background:#ff2b2b}
+.pop{position:absolute;width:min(260px,70vw);background:#e8e8ec;color:#111;border:2px solid #1a3fa0;box-shadow:6px 6px 0 #0008;font:13px/1.35 Arial,sans-serif;z-index:3}
+.pop h4{margin:0;background:#1a3fa0;color:#fff;padding:5px 8px;font-size:12px}
+.pop p{margin:10px;font-size:13px}
+.pop button{margin:0 10px 10px;padding:4px 14px;font:inherit;cursor:pointer}
+#bsod{position:absolute;inset:0;background:#0a58c4;color:#fff;font-family:Arial,sans-serif;padding:8vw;z-index:6;display:none}
+#bsod.on{display:block}
+#bsod .f{font-size:clamp(4rem,20vw,8rem)}
+#bsod p{font-size:clamp(1rem,4vw,1.5rem);max-width:30em}
+@keyframes shk{0%{transform:translate(0,0)}25%{transform:translate(-3px,2px)}50%{transform:translate(3px,-2px)}75%{transform:translate(-2px,-3px)}}
+@keyframes pulse{50%{opacity:.25}}
+@media(prefers-reduced-motion:reduce){#hack,#hack.on:after,#hack h2{animation:none}}
+
+/* Vídeo */
+#show{position:fixed;inset:0;background:#120a05;display:none;z-index:10;color:#f6e6c8;overflow:hidden}
+#show.on{display:block}
+.sl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;opacity:0;transition:opacity 1.4s}
+.sl.on{opacity:1}
+.sl img{max-width:86%;max-height:62%;border-radius:6px;box-shadow:0 12px 40px rgba(0,0,0,.6);object-fit:contain}
+.sl h2{font:400 clamp(2rem,9vw,3.6rem)/1.05 'Alfa Slab One',serif;margin:18px 0 0;color:#f6e6c8;text-shadow:3px 3px 0 #9b2015}
+.sl p{margin:10px 0 0;color:#d9921f;font-size:1.1rem}
+.sl.big h2{font-size:clamp(2.6rem,13vw,5rem)}
+.pics{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center;max-width:94%}
+.pics img{width:30%;max-width:260px;height:26vh;object-fit:cover;object-position:50% 25%;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.6)}
+.pics.two img{width:46%;max-width:none;height:auto;max-height:70vh;object-fit:contain}
+.pics.one img{width:auto;max-width:92%;height:auto;max-height:78vh;object-fit:contain}
+#x{position:absolute;top:14px;right:14px;z-index:3;background:rgba(0,0,0,.4);color:#fff;border:1px solid #fff5;border-radius:6px;padding:6px 10px;cursor:pointer}
+#c{position:fixed;inset:0;pointer-events:none;z-index:11}
+#sk,#nv{display:none}
+.test #sk{display:block;position:absolute;left:20px;bottom:20px;z-index:8;padding:8px 14px;cursor:pointer}
+.test #nv{display:flex;gap:10px;position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:12}
+#nv button{background:rgba(0,0,0,.5);color:#fff;border:1px solid #fff6;border-radius:6px;padding:8px 14px;cursor:pointer}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="app">
+  <header><h1>Agenda personal</h1><span style="color:var(--mut)" id="today"></span></header>
+  <section class="cal">
+    <h2>Octubre 2026</h2>
+    <div class="grid" id="g"></div>
+  </section>
+  <aside class="side">
+    <h3 id="st">Tareas del día</h3>
+    <ul id="ul"></ul>
+  </aside>
+</div>
+
+
+<div id="hack"><h2>⚠ SISTEMA COMPROMETIDO</h2><div id="pg"><span id="pt"></span><b><i id="pf"></i></b></div><pre id="lg"></pre><div id="cd"></div><div id="bsod"><div class="f">:(</div><p>Tu dispositivo ha tenido un problema y debe reiniciarse. Estamos recopilando información del error.</p><p id="bp">0% completado</p></div></div>
+<div id="show"><button id="x">Cerrar</button></div>
+
+<script>
+var $=function(i){return document.getElementById(i)};
+var TASKS={1:["Revisar facturas"],2:["Llamar al seguro"],5:["Reunión de equipo"],8:["Cita médica","Comprar café"],12:["Entrega de informe"],15:["Comida familiar"],19:["Renovar suscripción"],23:["Taller del coche"],28:["Cierre de mes"]};
+var photos=[];
+// Detecta solas las fotos assets/foto1.jpg, foto2.jpg, ... (en paralelo, hasta 60)
+(function(){var ok={},left=60;function done(){if(--left)return;for(var n=1;ok[n];n++)photos.push('assets/foto'+n+'.jpg')}
+for(var n=1;n<=60;n++)(function(n){var im=new Image();im.onload=function(){ok[n]=1;done()};im.onerror=done;im.src='assets/foto'+n+'.jpg'})(n)})();
+var audioURL='assets/zombie.mp3';
+var days=["L","M","X","J","V","S","D"],g=$('g');
+days.forEach(function(d){g.insertAdjacentHTML('beforeend','<div class="dn">'+d+'</div>')});
+for(var i=0;i<3;i++)g.insertAdjacentHTML('beforeend','<div></div>');
+for(var n=1;n<=31;n++){var b=document.createElement('button');b.className='d'+(TASKS[n]?' ev':'');b.textContent=n;b.setAttribute('aria-label','Día '+n+' de octubre');b.dataset.n=n;b.onclick=pick;g.appendChild(b)}
+$('today').textContent='Domingo, 4 de octubre';
+function pick(e){
+  var n=+e.currentTarget.dataset.n;
+  document.querySelectorAll('.d').forEach(function(x){x.classList.remove('sel')});e.currentTarget.classList.add('sel');
+  $('st').textContent=n+' de octubre';
+  var t=TASKS[n]||[];
+  $('ul').innerHTML=t.length?t.map(function(x){return '<li><b>'+x+'</b>Pendiente</li>'}).join(''):'<li>Sin tareas para este día.</li>';
+  if(n===4)hack();
+}
+/* Audio de "hackeo" */
+var ac,tm;
+function glitchOn(){
+  try{ac=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return}
+  var o=ac.createOscillator(),gn=ac.createGain();o.type='sawtooth';gn.gain.value=.12;o.connect(gn);gn.connect(ac.destination);o.start();
+  var buf=ac.createBuffer(1,ac.sampleRate,ac.sampleRate),d=buf.getChannelData(0);for(var i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  tm=setInterval(function(){
+    o.frequency.value=[80,220,440,1200,60,900][Math.floor(Math.random()*6)];
+    gn.gain.value=Math.random()<.3?0:.12;
+    if(Math.random()<.35){var s=ac.createBufferSource(),g2=ac.createGain();g2.gain.value=.15;s.buffer=buf;s.connect(g2);g2.connect(ac.destination);s.start(0,0,.08)}
+  },90);
+  ac._o=o;
+}
+function glitchOff(){clearInterval(tm);try{ac._o.stop();ac.close()}catch(e){}}
+/* Secuencia */
+var ti=[],busy=false;
+function hack(){
+  if(busy)return;busy=true;
+  var h=$('hack'),lg=$('lg'),cd=$('cd');h.classList.add('on');lg.textContent='';glitchOn();
+  var msgs=["Acceso no autorizado detectado","Cifrando archivos de agenda...","Copiando contactos...","Desactivando antivirus...","Subiendo calendario a servidor desconocido...","Contraseña comprometida","No apagues el dispositivo","Sistema fuera de control"];
+  var s=20;cd.textContent='Reinicio en '+s+' s';
+  var iv=setInterval(function(){
+    s--;cd.textContent='Reinicio en '+s+' s';
+    var hex='';for(var i=0;i<6;i++)hex+=Math.random().toString(16).slice(2,12)+' ';
+    lg.textContent+=(s%2?hex:'> '+msgs[Math.floor(Math.random()*msgs.length)])+'\n';
+    if(s<=0){clearInterval(iv);glitchOff();h.classList.remove('on');reveal()}
+  },1000);
+  ti=[iv];
+}
+var SONG=null,RV=null;
+function reveal(){
+  var sh=$('show');sh.classList.add('on');
+  var sl=[],steps=[],i=-1,timer,cf;
+  function add(html,cls){var d=document.createElement('div');d.className='sl '+(cls||'');d.innerHTML=html;sh.appendChild(d);sl.push(d);return d}
+  function playSong(){if(!SONG&&audioURL)SONG=new Audio(audioURL);if(SONG&&SONG.paused){SONG.play().catch(function(){})}}
+  steps.push({d:add('<h2>¡Era broma!</h2><p style="font-size:1.4rem;margin-top:22px;color:#f6e6c8">Tráeme mi ron o mi turrón</p>','big'),ms:6000});
+  steps.push({d:add('<h2>Ya estás en la mitad de la vida</h2><p>Por eso te ponemos esta canción<br>y estas fotos de recuerdo</p>'),ms:7000,on:playSong});
+  for(var k=0;k<photos.length;k+=5){var h='';photos.slice(k,k+5).forEach(function(p){h+='<img src="'+p+'" alt="">'});steps.push({d:add('<div class="pics'+(function(n){return n==1?' one':n==2?' two':''})(photos.slice(k,k+5).length)+'">'+h+'</div>'),ms:5000,on:playSong})}
+  steps.push({d:add('<h2>Felicidades, papa</h2>','big'),on:function(){playSong();confetti();var n=0;clearInterval(cf);cf=setInterval(function(){if(++n<4)confetti()},5000)}});
+  function show(k){
+    clearTimeout(timer);clearInterval(cf);
+    i=Math.max(0,Math.min(steps.length-1,k));
+    sl.forEach(function(x){x.classList.remove('on')});steps[i].d.classList.add('on');
+    if(steps[i].on)steps[i].on();
+    if(steps[i].ms)timer=setTimeout(function(){show(i+1)},steps[i].ms);
+  }
+  RV={next:function(){show(i+1)},prev:function(){show(i-1)}};
+  show(0);
+  $('x').onclick=function(){clearTimeout(timer);clearInterval(cf);if(SONG){SONG.pause();SONG=null}sl.forEach(function(x){x.remove()});sh.classList.remove('on');document.body.classList.remove('test');busy=false};
+}
+function confetti(){
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  var c=$('c'),x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;
+  var cols=['#d9921f','#f6e6c8','#9b2015','#0e7c86'],p=[];
+  for(var i=0;i<160;i++)p.push({x:Math.random()*c.width,y:-Math.random()*c.height*.7,vx:-1+Math.random()*2,vy:2+Math.random()*3,r:4+Math.random()*5,c:cols[i%4]});
+  (function t(){x.clearRect(0,0,c.width,c.height);var a=0;p.forEach(function(q){q.x+=q.vx;q.y+=q.vy;if(q.y<c.height+20)a++;x.fillStyle=q.c;x.fillRect(q.x,q.y,q.r,q.r*1.6)});if(a)requestAnimationFrame(t);else x.clearRect(0,0,c.width,c.height)})();
+}
+</script>
+<script>
+var A,AT,PT,SP,PP=[];
+function glitchOn(){
+  try{A=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return}
+  var o=A.createOscillator(),g=A.createGain(),r=A.createOscillator(),rg=A.createGain();
+  o.type='square';g.gain.value=.22;o.connect(g);g.connect(A.destination);o.start();
+  r.type='sawtooth';r.frequency.value=45;rg.gain.value=.3;r.connect(rg);rg.connect(A.destination);r.start();
+  var buf=A.createBuffer(1,A.sampleRate,A.sampleRate),d=buf.getChannelData(0);for(var i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  var t=0;
+  AT=setInterval(function(){
+    t++;o.frequency.value=(t%8<4)?(500+(t%4)*120):(300+Math.random()*1200);
+    g.gain.value=Math.random()<.2?0:.22;
+    if(Math.random()<.5){var s=A.createBufferSource(),q=A.createGain();q.gain.value=.3;s.buffer=buf;s.connect(q);q.connect(A.destination);s.start(0,0,.12)}
+  },80);
+  A._n=[o,r];
+}
+function glitchOff(){clearInterval(AT);try{A._n.forEach(function(n){n.stop()});A.close()}catch(e){}}
+function speak(t){try{var u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=.7;u.pitch=.1;u.volume=1;speechSynthesis.speak(u)}catch(e){}}
+function popup(h,m){
+  var h2=$('hack'),d=document.createElement('div');d.className='pop';
+  d.style.left=Math.random()*(innerWidth-270)+'px';d.style.top=(80+Math.random()*(innerHeight-250))+'px';
+  d.innerHTML='<h4>'+h+'</h4><p>⛔ '+m+'</p><button>Aceptar</button>';
+  d.querySelector('button').onclick=function(){popup('Error','No se puede cerrar esta ventana.')};
+  h2.appendChild(d);PP.push(d);
+}
+function hack(){
+  if(busy)return;busy=true;
+  var h=$('hack'),lg=$('lg'),cd=$('cd');
+  if(audioURL){SONG=new Audio(audioURL);SONG.play().then(function(){SONG.pause();SONG.currentTime=0}).catch(function(){})}
+  try{document.documentElement.requestFullscreen().catch(function(){})}catch(e){}
+  if(navigator.vibrate)navigator.vibrate([300,100,300,100,600,100,300]);
+  h.classList.add('on');lg.textContent='';$('bsod').classList.remove('on');glitchOn();
+  var files=["Fotos/IMG_2231.jpg","Documentos/contraseñas.txt","Banco/extracto_septiembre.pdf","Fotos/vacaciones_2024.zip","Contactos.vcf","Mensajes/WhatsApp.db"];
+  var ev=["Webcam: acceso concedido","Micrófono: grabando...","Ubicación enviada a 185.220.101.4","Contraseñas del navegador copiadas","Cámara frontal activada","Contactos subidos al servidor"];
+  var pops=[["Windows Defender","Se ha detectado un troyano: Trojan.Win32.Zombie"],["Seguridad","Tu cámara está siendo utilizada por otra persona"],["Sistema","Se están eliminando archivos personales"],["Banco","Acceso no autorizado a tu cuenta"],["Alerta","Tu IP ha sido expuesta"],["Error 0x80070057","Fallo crítico del sistema"]];
+  var s=20,pr=0;cd.textContent='Eliminación total en '+s+' s';
+  speak('Alerta. Alerta. Su dispositivo ha sido comprometido.');
+  var voz=[16,11,7];
+  PT=setInterval(function(){
+    s--;cd.textContent='Eliminación total en '+s+' s';
+    pr=Math.min(99,pr+5+Math.random()*4);$('pf').style.width=pr+'%';$('pt').textContent='Eliminando archivos personales… '+Math.floor(pr)+'%';
+    lg.textContent+=(s%3==0?'ELIMINADO: '+files[Math.floor(Math.random()*files.length)]:s%3==1?'> '+ev[Math.floor(Math.random()*ev.length)]:Math.random().toString(16).slice(2,14)+' '+Math.random().toString(16).slice(2,14))+'\n';
+    if(lg.textContent.length>1400)lg.textContent=lg.textContent.slice(-900);
+    var p=pops[Math.floor(Math.random()*pops.length)];if(PP.length<14&&s>5)popup(p[0],p[1]);
+    if(voz.indexOf(s)>-1)speak(['Te estamos viendo','Borrando todos tus archivos','Es demasiado tarde'][voz.indexOf(s)]);
+    if(s===4){glitchOff();$('bsod').classList.add('on');var b=0;SP=setInterval(function(){b=Math.min(100,b+25);$('bp').textContent=b+'% completado'},700)}
+    if(s<=0){clearInterval(PT);clearInterval(SP);try{speechSynthesis.cancel()}catch(e){}
+      PP.forEach(function(x){x.remove()});PP=[];$('pf').style.width='0';h.classList.remove('on');$('bsod').classList.remove('on');reveal()}
+  },1000);
+}
+$('x').addEventListener('click',function(){try{if(document.fullscreenElement)document.exitFullscreen()}catch(e){}});
+</script>
+</body>
+</html>
