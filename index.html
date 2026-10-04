@@ -132,7 +132,7 @@ function reveal(){
   steps.push({d:add('<h2>¡Era broma!</h2><p style="font-size:1.4rem;margin-top:22px;color:#f6e6c8">Tráeme mi ron o mi turrón</p>','big'),ms:6000});
   steps.push({d:add('<h2>Ya estás en la mitad de la vida</h2><p>Por eso te ponemos esta canción<br>y estas fotos de recuerdo</p>'),ms:7000,on:playSong});
   photos.forEach(function(p,k){steps.push({d:add('<div class="bg" style="background-image:url(\''+p+'\')"></div><img class="ph" style="--r:'+ratios[k]+'" src="'+p+'" alt="">','ph'),ms:3500,on:playSong})});
-  steps.push({d:add('<h2>Felicidades, papá</h2>','big'),on:function(){playSong();confetti();var n=0;clearInterval(cf);cf=setInterval(function(){if(++n<4)confetti()},5000)}});
+  steps.push({d:add('<h2>Felicistats Papa</h2>','big'),on:function(){playSong();confetti();var n=0;clearInterval(cf);cf=setInterval(function(){if(++n<4)confetti()},5000)}});
   function show(k){
     clearTimeout(timer);clearInterval(cf);
     i=Math.max(0,Math.min(steps.length-1,k));
